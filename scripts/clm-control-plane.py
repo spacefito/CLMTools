@@ -55,10 +55,12 @@ def main():
     parser.add_argument('-si', '--show-server-info', action='store_true',
                         help='show server information')
 
+    default_dir = os.path.join(os.path.expanduser('~'), 'my_cloud','info')
+
     parser.add_argument('-d', '--source-directory',
                         help='path to directory where yml input'
                              'models are stored',
-                        default="~/openstack/my_cloud/info")
+                        default=default_dir)
 
     args = parser.parse_args()
 
