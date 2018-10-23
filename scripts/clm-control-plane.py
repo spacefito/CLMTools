@@ -55,16 +55,26 @@ def main():
     parser.add_argument('-si', '--show-server-info', action='store_true',
                         help='show server information')
 
-    default_dir = os.path.join(os.path.expanduser('~'), 'my_cloud','info')
-
+    default_dir = os.path.join(os.path.expanduser('~'), 'openstack','my_cloud', 'info')
     parser.add_argument('-d', '--source-directory',
                         help='path to directory where yml input'
                              'models are stored',
                         default=default_dir)
 
+    parser.add_argument('--show-network', dest='network_name',
+                        help='displays list of servers attached to the '
+                             'given network along with their ip addresses.')
+
+    parser.add_argument('--list-nics', action='store_true',
+                        help='displays network cards by server in'
+                             'the format: server:nic_name')
+
+    parser.add_argument('--debug', action='store_true',
+                        help='debug flag for developing')
+
     args = parser.parse_args()
 
-    # tuple: (file_name, rooth_node)
+    # tuples: (file_name, rooth_node)
     sub_model_list = [('control_plane_topology', 'control_planes'),
                       ('region_topology', 'regions'),
                       ('network_topology', 'network_groups'),
@@ -73,9 +83,22 @@ def main():
 
     mdl = {k: CLMModel(
         os.path.join(args.source_directory, k+'.yml'), root)
-        for (k, root) in sub_model_list}
+        for (k, root) in sub_model_list} if not args.debug else {}
 
     output = {}
+
+    if args.network_name:
+        output['show_network'] = '-this should be the list of servers attached to the named network, with their ips'
+        raise NotImplementedError(output['show_network'])
+
+    if args.list_nics:
+        output['nic_list'] = CLMModel(root='nic_list')
+        output['nic_list'].model = [
+            ':'.join([server, nic])
+            for server in mdl['server_info'].model
+            for nic in mdl['server_info'].model[server]['net_data']
+        ]
+
     if args.show_server_info:
         output['server_info'] = mdl['server_info']
 
@@ -98,7 +121,7 @@ def main():
     if args.obfuscate:
         # create a mapping of hostnames to simple servers
 
-        hm={}
+        hm = {}
         # we want only the xxx-xx-xx- part of the real nodes (xxx-xx-xx)
         # and we need to create the endpoint names (xxx-xx-vip)
         regexp = re.compile('\A\w+\-\w+\-\w+\-')
@@ -113,10 +136,10 @@ def main():
                     vip_name = v.group(0)+'vip'
                     hm[vip_name] = server+'-vip'
 
-
         for hostname in hm:
             for model in output.values():
-                model.replace_value(hostname, hm[hostname])
+                model.replace_values(hostname, hm[hostname])
+                model.replace_keys(hostname, hm[hostname])
 
     for model in output.values():
         if args.output:
