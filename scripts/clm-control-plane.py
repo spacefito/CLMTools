@@ -25,7 +25,7 @@ from clm_models import CLMModel
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument('-o', '--output',
-                        help='output filename. If present, output is redirected'
+                        help='output filename. output is redirected'
                              'to the specified file.'
                         )
 
@@ -34,7 +34,7 @@ def main():
                              'from the output, like hostnames, ips, etc...'
                         )
 
-    parser.add_argument('-at','--all-topologies', action='store_true',
+    parser.add_argument('-at', '--all-topologies', action='store_true',
                         help="Include all topologies")
 
     parser.add_argument('-ct', '--control-plane-topology', action='store_true',
@@ -55,7 +55,8 @@ def main():
     parser.add_argument('-si', '--show-server-info', action='store_true',
                         help='show server information')
 
-    default_dir = os.path.join(os.path.expanduser('~'), 'openstack','my_cloud', 'info')
+    default_dir = os.path.join(os.path.expanduser('~'), 'openstack',
+                               'my_cloud', 'info')
     parser.add_argument('-d', '--source-directory',
                         help='path to directory where yml input'
                              'models are stored',
@@ -74,7 +75,7 @@ def main():
 
     args = parser.parse_args()
 
-    # tuples: (file_name, rooth_node)
+    # tuples: (file_name, root_node)
     sub_model_list = [('control_plane_topology', 'control_planes'),
                       ('region_topology', 'regions'),
                       ('network_topology', 'network_groups'),
@@ -82,13 +83,14 @@ def main():
                       ('server_info', None)]
 
     mdl = {k: CLMModel(
-        os.path.join(args.source_directory, k+'.yml'), root)
+        os.path.join(args.source_directory, k + '.yml'), root)
         for (k, root) in sub_model_list} if not args.debug else {}
 
     output = {}
 
     if args.network_name:
-        output['show_network'] = '-this should be the list of servers attached to the named network, with their ips'
+        output[
+            'show_network'] = 'show_network not implemented'
         raise NotImplementedError(output['show_network'])
 
     if args.list_nics:
@@ -124,8 +126,8 @@ def main():
         hm = {}
         # we want only the xxx-xx-xx- part of the real nodes (xxx-xx-xx)
         # and we need to create the endpoint names (xxx-xx-vip)
-        regexp = re.compile('\A\w+\-\w+\-\w+\-')
-        regexv = re.compile('\A\w+\-\w+\-')
+        regexp = re.compile('\A\w+-\w+-\w+')
+        regexv = re.compile('\A\w+-\w+-')
         for server in mdl['server_info'].model:
             hostname = mdl['server_info'].model[server]['hostname']
             m = regexp.match(hostname)
@@ -133,13 +135,16 @@ def main():
                 hm[m.group(0)] = server
                 v = regexv.match(m.group(0))
                 if v:
-                    vip_name = v.group(0)+'vip'
-                    hm[vip_name] = server+'-vip'
+                    vip_name = v.group(0) + 'vip'
+                    hm[vip_name] = server + '-vip'
 
         for hostname in hm:
             for model in output.values():
                 model.replace_values(hostname, hm[hostname])
                 model.replace_keys(hostname, hm[hostname])
+
+        for model in output.values():
+            model.obfuscate_ipv4_addresses()
 
     for model in output.values():
         if args.output:
