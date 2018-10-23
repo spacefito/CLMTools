@@ -36,12 +36,12 @@ class CLMModel(object):
         with open(file_name, 'a+') as f:
             yaml.dump(_dict, f, default_flow_style=False)
 
-    def set_value_by_key(self, key, new_value):
-        CLMModel.replace_by_key(self._model, key, new_value)
 
-    def replace_value(self, old_value, new_value):
+    def replace_values(self, old_value, new_value):
         CLMModel.replace_item_by_value(self._model, old_value, new_value)
 
+    def replace_keys(self, old_key, new_key):
+        CLMModel.replace_key(self._model, old_key, new_key)
     @property
     def model(self):
         return self._model
@@ -76,6 +76,17 @@ class CLMModel(object):
                     CLMModel.replace_item_by_value(item, old_value, new_value)
                 elif isinstance(item, str) and old_value in item:
                     data_structure[data_structure.index(item)] = new_value
+
+    @staticmethod
+    def replace_key(data_structure, old_key, new_key):
+        if isinstance(data_structure, dict):
+            for key, item in data_structure.items():
+                if isinstance(item, dict) or isinstance(item, list):
+                    CLMModel.replace_key(item, old_key, new_key)
+                if key == old_key:
+                    data_structure[new_key] = data_structure.pop(old_key)
+
+
 
     def __str__(self):
         _dict = {self._root: self._model} if self._root else self._model

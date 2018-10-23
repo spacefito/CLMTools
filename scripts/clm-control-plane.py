@@ -121,7 +121,7 @@ def main():
     if args.obfuscate:
         # create a mapping of hostnames to simple servers
 
-        hm={}
+        hm = {}
         # we want only the xxx-xx-xx- part of the real nodes (xxx-xx-xx)
         # and we need to create the endpoint names (xxx-xx-vip)
         regexp = re.compile('\A\w+\-\w+\-\w+\-')
@@ -136,10 +136,10 @@ def main():
                     vip_name = v.group(0)+'vip'
                     hm[vip_name] = server+'-vip'
 
-
         for hostname in hm:
             for model in output.values():
-                model.replace_value(hostname, hm[hostname])
+                model.replace_values(hostname, hm[hostname])
+                model.replace_keys(hostname, hm[hostname])
 
     for model in output.values():
         if args.output:
