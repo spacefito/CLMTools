@@ -1,4 +1,9 @@
-<pre>usage: clm-control-plane.py [-h] [-o OUTPUT] [-b] [-at] [-ct] [-rt] [-nt]
+<pre>
+cd CLMTools/scripts
+chmod 700 contro-plane.yml
+./control-playe.yml -h
+
+usage: clm-control-plane.py [-h] [-o OUTPUT] [-b] [-at] [-ct] [-rt] [-nt]
                             [-st] [-sl] [-si] [-d SOURCE_DIRECTORY]
                             [--show-network NETWORK_NAME] [--list-nics]
                             [--debug]
