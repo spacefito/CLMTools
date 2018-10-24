@@ -1,4 +1,4 @@
-usage: clm-control-plane.py [-h] [-o OUTPUT] [-b] [-at] [-ct] [-rt] [-nt]
+<pre>usage: clm-control-plane.py [-h] [-o OUTPUT] [-b] [-at] [-ct] [-rt] [-nt]
                             [-st] [-sl] [-si] [-d SOURCE_DIRECTORY]
                             [--show-network NETWORK_NAME] [--list-nics]
                             [--debug]
@@ -31,3 +31,4 @@ optional arguments:
   --list-nics           displays network cards by server inthe format:
                         server:nic_name
   --debug               debug flag for developing
+</pre>
