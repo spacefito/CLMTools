@@ -1,6 +1,6 @@
 <pre>
 cd CLMTools/scripts
-chmod 700 contro-plane.yml
+chmod 700 control-plane.yml
 ./control-playe.yml -h
 
 usage: clm-control-plane.py [-h] [-o OUTPUT] [-b] [-at] [-ct] [-rt] [-nt]
