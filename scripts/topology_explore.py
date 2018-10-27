@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/env python
 # -*- coding: utf-8 -*-
 #
 # (c) Copyright 2018 SUSE LLC
@@ -15,7 +15,8 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 
-
+import argparse
+import os
 import re
 import yaml
 
@@ -132,3 +133,139 @@ class CLMModel(object):
     def __str__(self):
         _dict = {self._root: self._model} if self._root else self._model
         return yaml.dump(_dict, default_flow_style=False)
+
+
+def main():
+    parser = argparse.ArgumentParser()
+    parser.add_argument('-o', '--output',
+                        help='output filename. output is redirected'
+                             'to the specified file.'
+                        )
+
+    parser.add_argument('-b', '--obfuscate', action='store_true',
+                        help='Obfuscate output. Removes ip addresses and '
+                             'hostnames from output.'
+                        )
+
+    parser.add_argument('-at', '--all-topologies', action='store_true',
+                        help="Include all topologies")
+
+    parser.add_argument('-ct', '--control-plane-topology', action='store_true',
+                        help='output control-plane topology')
+
+    parser.add_argument('-rt', '--region-topology', action='store_true',
+                        help='output region topology')
+
+    parser.add_argument('-nt', '--network-topology', action='store_true',
+                        help='output network topology ')
+
+    parser.add_argument('-st', '--service-topology', action='store_true',
+                        help='output service topology ')
+
+    parser.add_argument('-sl', '--service-list', action='store_true',
+                        help='List all services running in control-plane')
+
+    parser.add_argument('-si', '--show-server-info', action='store_true',
+                        help='show server information')
+
+    default_dir = os.path.join(os.path.expanduser('~'), 'openstack',
+                               'my_cloud', 'info')
+    parser.add_argument('-d', '--source-directory',
+                        help='path to directory where yml models are stored. '
+                             'Default ~/openstack/my_cloud/info',
+                        default=default_dir)
+
+    parser.add_argument('--show-network', dest='network_name',
+                        help='displays list of servers attached to the '
+                             'given network along with their ip addresses.')
+
+    parser.add_argument('--list-nics', action='store_true',
+                        help='displays network cards by server. '
+                             'server:nic_name')
+
+    parser.add_argument('--debug', action='store_true',
+                        help='debug flag for developing')
+
+    args = parser.parse_args()
+
+    # tuples for each model file to read in: (file_name, root_node)
+    sub_model_list = [('control_plane_topology', 'control_planes'),
+                      ('region_topology', 'regions'),
+                      ('network_topology', 'network_groups'),
+                      ('service_topology', 'services'),
+                      ('server_info', None)]
+
+    # for every model create a CLMModel object
+    mdl = {k: CLMModel(
+        os.path.join(args.source_directory, k + '.yml'), root)
+        for (k, root) in sub_model_list} if not args.debug else {}
+
+    output = {}
+
+    if args.network_name:
+        output[
+            'show_network'] = 'show_network not implemented'
+        raise NotImplementedError(output['show_network'])
+
+    if args.list_nics:
+        output['nic_list'] = CLMModel(root='nic_list')
+        output['nic_list'].model = [
+            ':'.join([server, nic])
+            for server in mdl['server_info'].model
+            for nic in mdl['server_info'].model[server]['net_data']
+        ]
+
+    if args.show_server_info:
+        output['server_info'] = mdl['server_info']
+
+    if args.control_plane_topology or args.all_topologies:
+        output['control_plane_topology'] = mdl['control_plane_topology']
+
+    if args.region_topology or args.all_topologies:
+        output['region_topology'] = mdl['region_topology']
+
+    if args.network_topology or args.all_topologies:
+        output['network_topology'] = mdl['network_topology']
+
+    if args.service_topology or args.all_topologies:
+        output['service_topology'] = mdl['service_topology']
+
+    if args.service_list:
+        output['service_list'] = CLMModel(root='service_list')
+        output['service_list'].model = mdl['service_topology'].model.keys()
+
+    if args.obfuscate:
+
+        # create a mapping of hostnames to simple server_names
+        hm = {}
+        regexp = re.compile('\A\w+-\w+-\w+')
+        regexv = re.compile('\A\w+-\w+-')
+        for server in mdl['server_info'].model:
+            hostname = mdl['server_info'].model[server]['hostname']
+            m = regexp.match(hostname)
+            if m:
+                hm[m.group(0)] = server
+                v = regexv.match(m.group(0))
+                if v:
+                    vip_name = v.group(0) + 'vip'
+                    hm[vip_name] = server + '-vip'
+
+        #obfuscate hostnames
+        for hostname in hm:
+            for model in output.values():
+                model.replace_values(hostname, hm[hostname])
+                model.replace_keys(hostname, hm[hostname])
+
+        #obfuscate ipv4 addresses
+        for model in output.values():
+            model.obfuscate_ipv4_addresses()
+
+    for model in output.values():
+        if args.output:
+            model.append_to_file(args.output)
+        else:
+            print(model)
+
+
+if __name__ == '__main__':
+    main()
