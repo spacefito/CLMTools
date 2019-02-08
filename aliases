@@ -9,6 +9,6 @@ alias run-site='cd $HOME/scratch/ansible/next/ardana/ansible; ansible-playbook -
 alias clm_env='eval "$(${CLM_HOME}/ardana-dev-tools/bin/ardana-env)"; export PATH=${PATH}:${CLM_HOME}/ardana-dev-tools/bin;vagrant global-status'
 alias show_vagrant_vms='vagrant global-status'
 alias show_ovs_bridges='sudo ovsdb-client dump Bridge'
-alias show_ovs_bridge_types='sudo ovs-db-client dump Bridge name datapath_type'
+alias show_ovs_bridge_types='sudo ovsdb-client dump Bridge name datapath_type'
 #alias show_dpdk_bindings='sudo dpdk-devbind -s | grep \'drv=igb_io\''
 alias show_clm_hosts='ls $HOME/scratch/ansible/next/ardana/ansible/host_vars'
