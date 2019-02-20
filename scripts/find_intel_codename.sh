@@ -1,4 +1,8 @@
 #!/bin/bash
+# This script requires "pup" https://github.com/ericchiang/pup
+# binaries for pup here: https://github.com/EricChiang/pup/releases
+#  just unzip and put under ~/bin or a directory
+# under $PATH
 
 set -euo pipefail
 
