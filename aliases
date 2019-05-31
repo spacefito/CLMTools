@@ -21,3 +21,4 @@ alias gl='git log'
 alias glo='git log --oneline'
 alias gb='git branch'
 alias gc='git checkout'
+alias glog='git --no-pager log --oneline
