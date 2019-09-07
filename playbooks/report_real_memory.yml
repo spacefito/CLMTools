@@ -1,0 +1,12 @@
+#!/usr/bin/env ansible-playbook
+---
+
+- hosts: all
+  gather_facts: yes
+  tasks:
+  - name: Real memory utilization
+    debug:
+      msg:
+       - " free: {{ hostvars[inventory_hostname]['ansible_memory_mb']['real']['free'] / 1024 }} GB"
+       - " used: {{ hostvars[inventory_hostname]['ansible_memory_mb']['real']['used'] / 1024 }} GB"
+       - "total: {{ hostvars[inventory_hostname]['ansible_memory_mb']['real']['total'] / 1024 }} GB"
