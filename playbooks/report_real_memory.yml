@@ -7,6 +7,8 @@
   - name: Real memory utilization
     debug:
       msg:
-       - " free: {{ hostvars[inventory_hostname]['ansible_memory_mb']['real']['free'] / 1024 }} GB"
-       - " used: {{ hostvars[inventory_hostname]['ansible_memory_mb']['real']['used'] / 1024 }} GB"
-       - "total: {{ hostvars[inventory_hostname]['ansible_memory_mb']['real']['total'] / 1024 }} GB"
+       - " free: {{ (hostvars[inventory_hostname]['ansible_memory_mb']['real']['free']/1024)  | round(2, 'common') }} GB"
+       - "%free: {{ (hostvars[inventory_hostname]['ansible_memory_mb']['real']['free']/hostvars[inventory_hostname]['ansible_memory_mb']['real']['total']*100)|round(2,'common') }}%"
+       - " used: {{ (hostvars[inventory_hostname]['ansible_memory_mb']['real']['used']/1024)  | round(2, 'common') }} GB"
+       - "total: {{ (hostvars[inventory_hostname]['ansible_memory_mb']['real']['total']/1024)  | round(2, 'common') }} GB"
+
